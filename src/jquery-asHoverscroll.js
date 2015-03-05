@@ -1,6 +1,6 @@
 /*
- * asHoverscroll
- * https://github.com/amazingSurge/jquery-asHoverscroll
+ * asHoverScroll
+ * https://github.com/amazingSurge/jquery-asHoverScroll
  *
  * Copyright (c) 2015 amazingSurge
  * Licensed under the GPL license.
@@ -8,7 +8,7 @@
 (function($) {
     "use strict";
 
-    var pluginName = 'asHoverscroll';
+    var pluginName = 'asHoverScroll';
 
     var Plugin = $[pluginName] = function(element, options) {
         this.element = element;

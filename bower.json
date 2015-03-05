@@ -1,15 +1,15 @@
 {
-    "name": "jquery-asHoverscroll",
-    "version": "0.1.0",
-    "main": "dist/jquery-asHoverscroll.js",
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ],
-    "dependencies": {
-        "jquery": ">=1.8.3"
-    }
+  "name": "jquery-asHoverScroll",
+  "version": "0.1.0",
+  "main": "dist/jquery-asHoverScroll.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": ">=1.8.3"
+  }
 }
