@@ -1,0 +1,38 @@
+{
+  "name": "jquery-asHoverscroll",
+  "title": "jQuery asHoverscroll",
+  "description": "A jQuery plugin to make it easy for you and your site’s users to scroll/pan content that is larger than its container.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/amazingSurge/jquery-asHoverscroll",
+  "author": {
+    "name": "amazingSurge",
+    "email": "amazingSurge@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:amazingSurge/jquery-asHoverscroll.git"
+  },
+  "bugs": "https://github.com/amazingSurge/jquery-asHoverscroll/issues",
+  "licenses": [
+    {
+      "type": "GPL",
+      "url": "https://github.com/amazingSurge/jquery-asHoverscroll/blob/master/LICENSE-GPL"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-autoprefixer": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-jsbeautifier": "*",
+    "grunt-text-replace": "*",
+    "load-grunt-tasks": "*"
+  },
+  "dependencies": {}
+}
