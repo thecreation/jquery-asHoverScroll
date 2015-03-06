@@ -16,7 +16,11 @@
 
         this.options = $.extend({}, Plugin.defaults, options, this.$element.data());
         this.$list = $(this.options.list, this.$element);
-
+        
+        this.classes = {
+            disabled: this.options.namespace + '-disabled'
+        };
+        
         if (this.options.direction === 'vertical') {
             this.attributes = {
                 page: 'pageY',
@@ -46,6 +50,7 @@
     };
 
     Plugin.defaults = {
+        namespace: pluginName,
         list: '> ul',
         item: '> li',
         exception: null,
