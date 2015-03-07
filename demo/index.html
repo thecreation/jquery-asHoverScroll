@@ -86,6 +86,12 @@
 			</li>
 		</ul>
 	</div>
+	<div>
+        <button class="api-init">Init</button>
+        <button class="api-enable">Enable</button>
+        <button class="api-disable">Disable</button>
+        <button class="api-destory">Destory</button>
+    </div>
 <script src="js/jquery.js"></script>
 <script src="../src/jquery-asHoverScroll.js"></script>
 <script>
@@ -93,6 +99,18 @@
 		$('.container').asHoverScroll({
 			exception: '.subInner'
 		});
+		$('.api-destory').on('click', function(){
+            $('.container').asHoverScroll('destory');
+        });
+        $('.api-enable').on('click', function(){
+            $('.container').asHoverScroll('enable');
+        });
+        $('.api-disable').on('click', function(){
+            $('.container').asHoverScroll('disable');
+        });
+        $('.api-init').on('click', function(){
+            $('.container').asHoverScroll();
+        });
 	});
 </script>
 </body>

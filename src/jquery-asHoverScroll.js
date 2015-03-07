@@ -9,6 +9,7 @@
     "use strict";
 
     var pluginName = 'asHoverScroll';
+    var instanceId = 0;
 
     var Plugin = $[pluginName] = function(element, options) {
         this.element = element;
@@ -16,11 +17,11 @@
 
         this.options = $.extend({}, Plugin.defaults, options, this.$element.data());
         this.$list = $(this.options.list, this.$element);
-        
+
         this.classes = {
             disabled: this.options.namespace + '-disabled'
         };
-        
+
         if (this.options.direction === 'vertical') {
             this.attributes = {
                 page: 'pageY',
@@ -43,6 +44,7 @@
             };
         }
 
+        this.instanceId = (++instanceId);
         this.disabled = false;
 
         this._trigger('init');
@@ -183,14 +185,17 @@
     Plugin.prototype = {
         constructor: Plugin,
         init: function() {
-            var self = this;
-
             this.initPosition();
 
             // init length data
             this.updateLength();
 
-            var enterEvents = [],
+            this.bindEvents();
+        },
+
+        bindEvents: function() {
+            var self = this,
+                enterEvents = [],
                 leaveEvents = [];
 
             if (this.options.mousemove) {
@@ -216,12 +221,18 @@
                 self.options.onLeave.call(this);
             });
 
-            $(window).on(this.eventName('orientationchange'), function() {
+            $(window).on(this.eventNameWithId('orientationchange'), function() {
                 self.update.call(self);
             });
-            $(window).on(this.eventName('resize'), this.throttle(function() {
+            $(window).on(this.eventNameWithId('resize'), this.throttle(function() {
                 self.update.call(self);
             }, this.options.throttle));
+        },
+
+        unbindEvents: function() {
+            this.$element.off(this.eventName());
+            this.$list.off(this.eventName());
+            $(window).off(this.eventNameWithId());
         },
 
         onMove: function(event) {
@@ -351,6 +362,19 @@
             return events.join(' ');
         },
 
+        eventNameWithId: function(events) {
+            if (typeof events !== 'string' || events === '') {
+                return this.options.namespace + '-' + this.instanceId;
+            }
+
+            events = events.split(' ');
+            var length = events.length;
+            for (var i = 0; i < length; i++) {
+                events[i] = events[i] + '.' + this.options.namespace + '-' + this.instanceId;
+            }
+            return events.join(' ');
+        },
+
         _trigger: function(eventType) {
             var method_arguments = Array.prototype.slice.call(arguments, 1),
                 data = [this].concat(method_arguments);
@@ -404,19 +428,28 @@
         },
 
         enable: function() {
-            this.disabled = false;
+            if (this.disabled) {
+                this.disabled = false;
 
-            this.$element.removeClass(this.classes.disabled);
+                this.$element.removeClass(this.classes.disabled);
+
+                this.bindEvents();
+            }
         },
 
         disable: function() {
-            this.disabled = true;
+            if (this.disabled !== true) {
+                this.disabled = true;
 
-            this.$element.addClass(this.classes.disabled);
+                this.$element.addClass(this.classes.disabled);
+
+                this.unbindEvents();
+            }
         },
 
         destory: function() {
-            this.$element.off(this.eventName());
+            this.$element.removeClass(this.classes.disabled);
+            this.unbindEvents();
             this.$element.data(pluginName, null);
             this._trigger('destory');
         }
