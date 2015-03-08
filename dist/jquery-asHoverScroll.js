@@ -1,4 +1,4 @@
-/*! jQuery asHoverScroll - v0.1.0 - 2015-03-07
+/*! jQuery asHoverScroll - v0.1.0 - 2015-03-08
 * https://github.com/amazingSurge/jquery-asHoverScroll
 * Copyright (c) 2015 amazingSurge; Licensed GPL */
 (function($) {
@@ -254,7 +254,7 @@
         },
 
         isMatchScroll: function(event) {
-            if (!this.disabled && this.listLength > this.containerLength) {
+            if (!this.disabled && this.canScroll()) {
                 if (this.options.exception) {
                     if ($(event.target).closest(this.options.exception).length === 0) {
                         return true;
@@ -265,6 +265,10 @@
                 return true;
             }
             return false;
+        },
+
+        canScroll: function() {
+            return this.listLength > this.containerLength;
         },
 
         getContainerLength: function() {
@@ -343,6 +347,10 @@
 
         update: function() {
             this.updateLength();
+
+            if (!this.canScroll()) {
+                this.initPosition();
+            }
         },
 
         eventName: function(events) {
@@ -437,6 +445,7 @@
             if (this.disabled !== true) {
                 this.disabled = true;
 
+                this.initPosition();
                 this.$element.addClass(this.classes.disabled);
 
                 this.unbindEvents();

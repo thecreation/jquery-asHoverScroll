@@ -258,7 +258,7 @@
         },
 
         isMatchScroll: function(event) {
-            if (!this.disabled && this.listLength > this.containerLength) {
+            if (!this.disabled && this.canScroll()) {
                 if (this.options.exception) {
                     if ($(event.target).closest(this.options.exception).length === 0) {
                         return true;
@@ -269,6 +269,10 @@
                 return true;
             }
             return false;
+        },
+
+        canScroll: function() {
+            return this.listLength > this.containerLength;
         },
 
         getContainerLength: function() {
@@ -347,6 +351,10 @@
 
         update: function() {
             this.updateLength();
+
+            if (!this.canScroll()) {
+                this.initPosition();
+            }
         },
 
         eventName: function(events) {
@@ -441,6 +449,7 @@
             if (this.disabled !== true) {
                 this.disabled = true;
 
+                this.initPosition();
                 this.$element.addClass(this.classes.disabled);
 
                 this.unbindEvents();
