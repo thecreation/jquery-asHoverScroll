@@ -44,8 +44,10 @@
             };
         }
 
+        // Current state information.
+        this._states = {};
+
         this.instanceId = (++instanceId);
-        this.disabled = false;
 
         this._trigger('init');
         this.init();
@@ -203,12 +205,12 @@
                 enterEvents.push('mouseenter');
                 leaveEvents.push('mouseleave');
             }
-            if (this.options.touchmove) {
+            if (this.options.touchmove && support.touch) {
                 this.$element.on(this.eventName('touchmove touchend touchstart'), $.proxy(this.onMove, this));
                 enterEvents.push('touchstart');
                 leaveEvents.push('touchend');
             }
-            if (this.options.pointermove) {
+            if (this.options.pointermove && support.pointer) {
                 this.$element.on(this.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onMove, this));
                 enterEvents.push(support.prefixPointerEvent('pointerdown'));
                 leaveEvents.push(support.prefixPointerEvent('pointerup'));
@@ -258,7 +260,7 @@
         },
 
         isMatchScroll: function(event) {
-            if (!this.disabled && this.canScroll()) {
+            if (!this.is('disabled') && this.canScroll()) {
                 if (this.options.exception) {
                     if ($(event.target).closest(this.options.exception).length === 0) {
                         return true;
@@ -350,10 +352,12 @@
         },
 
         update: function() {
-            this.updateLength();
+            if (!this.is('disabled')) {
+                this.updateLength();
 
-            if (!this.canScroll()) {
-                this.initPosition();
+                if (!this.canScroll()) {
+                    this.initPosition();
+                }
             }
         },
 
@@ -401,6 +405,31 @@
         },
 
         /**
+         * Checks whether the carousel is in a specific state or not.
+         */
+        is: function(state) {
+            return this._states[state] && this._states[state] > 0;
+        },
+
+        /**
+         * Enters a state.
+         */
+        enter: function(state) {
+            if (this._states[state] === undefined) {
+                this._states[state] = 0;
+            }
+
+            this._states[state] ++;
+        },
+
+        /**
+         * Leaves a state.
+         */
+        leave: function(state) {
+            this._states[state] --;
+        },
+
+        /**
          * _throttle
          * @description Borrowed from Underscore.js
          */
@@ -436,8 +465,8 @@
         },
 
         enable: function() {
-            if (this.disabled) {
-                this.disabled = false;
+            if (this.is('disabled')) {
+                this.leave('disabled');
 
                 this.$element.removeClass(this.classes.disabled);
 
@@ -446,8 +475,8 @@
         },
 
         disable: function() {
-            if (this.disabled !== true) {
-                this.disabled = true;
+            if (!this.is('disabled')) {
+                this.enter('disabled');
 
                 this.initPosition();
                 this.$element.addClass(this.classes.disabled);
