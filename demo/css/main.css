@@ -43,10 +43,9 @@
     top: 0;
 }
 
-li:hover > .subInner {
+li.is-active > .subInner {
     display: block;
 }
-
 
 .container.horizontal {
     height: 39px;

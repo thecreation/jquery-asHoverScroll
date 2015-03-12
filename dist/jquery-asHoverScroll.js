@@ -1,4 +1,4 @@
-/*! jQuery asHoverScroll - v0.1.0 - 2015-03-10
+/*! jQuery asHoverScroll - v0.1.0 - 2015-03-12
 * https://github.com/amazingSurge/jquery-asHoverScroll
 * Copyright (c) 2015 amazingSurge; Licensed GPL */
 (function($) {
@@ -43,6 +43,12 @@
         // Current state information.
         this._states = {};
 
+        // Current state information for the touch operation.
+        this._scroll = {
+            time: null,
+            pointer: null
+        };
+
         this.instanceId = (++instanceId);
 
         this._trigger('init');
@@ -57,9 +63,9 @@
 
         direction: 'vertical',
 
-        mousemove: true,
-        touchmove: true,
-        pointermove: true,
+        mouseMove: true,
+        touchScroll: true,
+        pointerScroll: true,
 
         useCssTransforms: true,
         useCssTransforms3d: true,
@@ -193,23 +199,23 @@
 
         bindEvents: function() {
             var self = this,
-                enterEvents = [],
+                enterEvents = ['enter'],
                 leaveEvents = [];
 
-            if (this.options.mousemove) {
+            if (this.options.mouseMove) {
                 this.$element.on(this.eventName('mousemove'), $.proxy(this.onMove, this));
                 enterEvents.push('mouseenter');
                 leaveEvents.push('mouseleave');
             }
-            if (this.options.touchmove && support.touch) {
-                this.$element.on(this.eventName('touchmove touchend touchstart'), $.proxy(this.onMove, this));
-                enterEvents.push('touchstart');
-                leaveEvents.push('touchend');
+
+            if (this.options.touchScroll && support.touch) {
+                this.$element.on(this.eventName('touchstart'), $.proxy(this.onScrollStart, this));
+                this.$element.on(this.eventName('touchcancel'), $.proxy(this.onScrollEnd, this));
             }
-            if (this.options.pointermove && support.pointer) {
-                this.$element.on(this.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onMove, this));
-                enterEvents.push(support.prefixPointerEvent('pointerdown'));
-                leaveEvents.push(support.prefixPointerEvent('pointerup'));
+
+            if (this.options.pointerScroll && support.pointer) {
+                this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $.proxy(this.onScrollStart, this));
+                this.$element.on(this.eventName(support.prefixPointerEvent('pointercancel')), $.proxy(this.onScrollEnd, this));
             }
 
             this.$list.on(this.eventName(enterEvents.join(' ')), this.options.item, function() {
@@ -233,12 +239,136 @@
             $(window).off(this.eventNameWithId());
         },
 
-        onMove: function(event) {
+        /**
+         * Handles `touchstart` and `mousedown` events.
+         */
+        onScrollStart: function(event) {
+            var self = this;
+
+            if (event.which === 3) {
+                return;
+            }
+
+            this._scroll.time = new Date().getTime();
+            this._scroll.pointer = this.pointer(event);
+            this._scroll.start = this.getPosition();
+
+            var callback = function() {
+                self.enter('scrolling');
+                self._trigger('scroll');
+            }
+
+            if (this.options.touchScroll && support.touch) {
+                $(document).on(self.eventName('touchend'), $.proxy(this.onScrollEnd, this));
+
+                $(document).one(self.eventName('touchmove'), $.proxy(function() {
+                    $(document).on(self.eventName('touchmove'), $.proxy(this.onScrollMove, this));
+
+                    callback();
+                }, this));
+            }
+
+            if (this.options.pointerScroll && support.pointer) {
+                $(document).on(self.eventName(support.prefixPointerEvent('pointerup')), $.proxy(this.onScrollEnd, this));
+
+                $(document).one(self.eventName(support.prefixPointerEvent('pointermove')), $.proxy(function() {
+                    $(document).on(self.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onScrollMove, this));
+
+                    callback();
+                }, this));
+            }
+
+            $(document).on(self.eventName('blur'), $.proxy(this.onScrollEnd, this));
+
+            event.preventDefault();
+        },
+
+        /**
+         * Handles the `touchmove` and `mousemove` events.
+         */
+        onScrollMove: function(event) {
+            this._scroll.updated = this.pointer(event);
+            var distance = this.distance(this._scroll.pointer, this._scroll.updated);
+
+            if (!this.is('scrolling')) {
+                return;
+            }
+
+            event.preventDefault();
+            var postion = this._scroll.start + distance;
+
+            if (this.canScroll()) {
+                if (postion > 0) {
+                    postion = 0;
+                } else if (postion < this.containerLength - this.listLength) {
+                    postion = this.containerLength - this.listLength;
+                }
+                this.updatePosition(postion);
+            }
+        },
+
+        /**
+         * Handles the `touchend` and `mouseup` events.
+         */
+        onScrollEnd: function(event) {
+            $(document).off(this.eventName('touchmove touchend blur'));
+
+            if (!this.is('scrolling')) {
+                return;
+            }
+
+            this.leave('scrolling');
+            this._trigger('scrolled');
+
+            $(event.target).trigger('enter');
+        },
+
+        /**
+         * Gets unified pointer coordinates from event.
+         * @returns {Object} - Contains `x` and `y` coordinates of current pointer position.
+         */
+        pointer: function(event) {
+            var result = {
+                x: null,
+                y: null
+            };
+
+            event = this.getEvent(event);
+
+            if (event.pageX) {
+                result.x = event.pageX;
+                result.y = event.pageY;
+            } else {
+                result.x = event.clientX;
+                result.y = event.clientY;
+            }
+
+            return result;
+        },
+
+        getEvent: function(event) {
             event = event.originalEvent || event || window.event;
 
             event = event.touches && event.touches.length ?
                 event.touches[0] : event.changedTouches && event.changedTouches.length ?
                 event.changedTouches[0] : event;
+
+            return event;
+        },
+
+        /**
+         * Gets the distance of two pointer.
+         */
+        distance: function(first, second) {
+            if (this.options.direction === 'vertical') {
+                return second.y - first.y;
+            } else {
+                return second.x - first.x;
+            }
+        },
+
+        onMove: function(event) {
+            event = this.getEvent(event);
 
             if (this.isMatchScroll(event)) {
                 var pointer;
@@ -313,6 +443,8 @@
             } else {
                 value = this.$list.css(this.attributes.position);
             }
+
+            return parseFloat(value.replace('px', ''));
         },
 
         makePositionStyle: function(value) {
