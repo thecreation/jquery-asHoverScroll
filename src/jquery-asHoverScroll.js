@@ -47,6 +47,12 @@
         // Current state information.
         this._states = {};
 
+        // Current state information for the touch operation.
+        this._touch = {
+            time: null,
+            pointer: null
+        };
+
         this.instanceId = (++instanceId);
 
         this._trigger('init');
@@ -205,11 +211,16 @@
                 enterEvents.push('mouseenter');
                 leaveEvents.push('mouseleave');
             }
-            if (this.options.touchmove && support.touch) {
-                this.$element.on(this.eventName('touchmove touchend touchstart'), $.proxy(this.onMove, this));
-                enterEvents.push('touchstart');
-                leaveEvents.push('touchend');
-            }
+            // if (this.options.touchmove && support.touch) {
+            //     this.$element.on(this.eventName('touchmove touchend touchstart'), $.proxy(this.onMove, this));
+            //     enterEvents.push('touchstart');
+            //     leaveEvents.push('touchend');
+            // }
+
+            //if (this.options.touchTouch && support.touch) {
+                this.$element.on(this.eventName('touchstart'), $.proxy(this.onTouchStart, this));
+                this.$element.on(this.eventName('touchcancel'), $.proxy(this.onTouchEnd, this));
+            //}
             if (this.options.pointermove && support.pointer) {
                 this.$element.on(this.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onMove, this));
                 enterEvents.push(support.prefixPointerEvent('pointerdown'));
@@ -235,6 +246,107 @@
             this.$element.off(this.eventName());
             this.$list.off(this.eventName());
             $(window).off(this.eventNameWithId());
+        },
+
+        /**
+         * Handles `touchstart` and `mousedown` events.
+         */
+        onTouchStart: function(event) {
+            var self = this;
+
+            if (event.which === 3) {
+                return;
+            }
+
+
+            this._touch.time = new Date().getTime();
+            this._touch.pointer = this.pointer(event);
+
+            var callback = function() {
+                self.enter('touching');
+                self.trigger('touch');
+            }
+
+            if (this.options.touchmove && support.touch) {
+                $(document).on(self.eventName('touchend'), $.proxy(this.onTouchEnd, this));
+
+                $(document).one(self.eventName('touchmove'), $.proxy(function() {
+                    $(document).on(self.eventName('touchmove'), $.proxy(this.onTouchMove, this));
+
+                    callback();
+                }, this));
+            }
+
+            $(document).on(self.eventName('blur'), $.proxy(this.onTouchEnd, this));
+
+            return false;
+        },
+
+        /**
+         * Handles the `touchmove` and `mousemove` events.
+         */
+        onTouchMove: function(event) {
+            var distance = this.distance(this._touch.pointer, this.pointer(event));
+
+            if (!this.is('touching')) {
+                return;
+            }
+
+            event.preventDefault();
+            this.updatePosition(distance);
+        },
+
+        /**
+         * Handles the `touchend` and `mouseup` events.
+         */
+        onTouchEnd: function() {
+            $(document).off(this.eventName('touchmove touchend blur'));
+
+
+            if (!this.is('touching')) {
+                return;
+            }
+
+            this.leave('touching');
+            this.trigger('touched');
+        },
+
+        /**
+         * Gets unified pointer coordinates from event.
+         * @returns {Object} - Contains `x` and `y` coordinates of current pointer position.
+         */
+        pointer: function(event) {
+            var result = {
+                x: null,
+                y: null
+            };
+
+            event = event.originalEvent || event || window.event;
+
+            event = event.touches && event.touches.length ?
+                event.touches[0] : event.changedTouches && event.changedTouches.length ?
+                event.changedTouches[0] : event;
+
+            if (event.pageX) {
+                result.x = event.pageX;
+                result.y = event.pageY;
+            } else {
+                result.x = event.clientX;
+                result.y = event.clientY;
+            }
+
+            return result;
+        },
+
+        /**
+         * Gets the distance of two pointer.
+         */
+        distance: function(first, second) {
+            if (this.options.direction === 'vertical') {
+                return second.y - first.y;
+            } else {
+                return second.x - first.x;
+            }
         },
 
         onMove: function(event) {
