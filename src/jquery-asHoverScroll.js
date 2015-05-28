@@ -341,7 +341,7 @@
 
             event = this.getEvent(event);
 
-            if (event.pageX & this.options.fixed) {
+            if (event.pageX && !this.options.fixed) {
                 result.x = event.pageX;
                 result.y = event.pageY;
             } else {
@@ -378,7 +378,7 @@
 
             if (this.isMatchScroll(event)) {
                 var pointer, distance, offset;
-                if (event[this.attributes.page] & this.options.fixed) {
+                if (event[this.attributes.page] && !this.options.fixed) {
                     pointer = event[this.attributes.page];
                 } else {
                     pointer = event[this.attributes.client];
