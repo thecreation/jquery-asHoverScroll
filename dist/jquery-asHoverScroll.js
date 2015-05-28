@@ -1,4 +1,4 @@
-/*! jQuery asHoverScroll - v0.1.0 - 2015-03-12
+/*! jQuery asHoverScroll - v0.2.0 - 2015-05-29
 * https://github.com/amazingSurge/jquery-asHoverScroll
 * Copyright (c) 2015 amazingSurge; Licensed GPL */
 (function($) {
@@ -62,6 +62,7 @@
         exception: null,
 
         direction: 'vertical',
+        fixed: false,
 
         mouseMove: true,
         touchScroll: true,
@@ -69,6 +70,7 @@
 
         useCssTransforms: true,
         useCssTransforms3d: true,
+        boundary: 10,
 
         throttle: 20,
 
@@ -335,7 +337,7 @@
 
             event = this.getEvent(event);
 
-            if (event.pageX) {
+            if (event.pageX & this.options.fixed) {
                 result.x = event.pageX;
                 result.y = event.pageY;
             } else {
@@ -371,17 +373,26 @@
             event = this.getEvent(event);
 
             if (this.isMatchScroll(event)) {
-                var pointer;
-
-                if (event[this.attributes.page]) {
+                var pointer, distance, offset;
+                if (event[this.attributes.page] & this.options.fixed) {
                     pointer = event[this.attributes.page];
                 } else {
                     pointer = event[this.attributes.client];
                 }
 
-                var distance = ((this.element[this.attributes.offset] - pointer) * this.multiplier);
+                offset = pointer - this.element[this.attributes.offset];
 
-                this.updatePosition(distance);
+                if (offset < this.options.boundary) {
+                    distance = 0;
+                } else {
+                    distance = (offset - this.options.boundary) * this.multiplier;
+
+                    if (distance > this.listLength - this.containerLength) {
+                        distance = this.listLength - this.containerLength;
+                    }
+                }
+
+                this.updatePosition(-distance);
             }
         },
 
@@ -414,7 +425,7 @@
         updateLength: function() {
             this.containerLength = this.getContainerLength();
             this.listLength = this.getListhLength();
-            this.multiplier = (this.listLength - this.containerLength) / this.containerLength;
+            this.multiplier = (this.listLength - this.containerLength) / (this.containerLength - 2 * this.options.boundary);
         },
 
         initPosition: function() {
@@ -486,6 +497,8 @@
                 if (!this.canScroll()) {
                     this.initPosition();
                 }
+
+
             }
         },
 
