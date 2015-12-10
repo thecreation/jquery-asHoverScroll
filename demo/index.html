@@ -87,12 +87,12 @@
 		</ul>
 	</div>
 
-
 	<div>
         <button class="api-init">Init</button>
         <button class="api-enable">Enable</button>
         <button class="api-disable">Disable</button>
         <button class="api-destory">Destory</button>
+        <button class="api-leaveAll">Leave All</button>
     </div>
 <script src="js/jquery.js"></script>
 <script src="../src/jquery-asHoverScroll.js"></script>
@@ -112,6 +112,9 @@
         });
         $('.api-init').on('click', function(){
             $('.container').asHoverScroll();
+        });
+        $('.api-leaveAll').on('click', function(){
+            $('.container').asHoverScroll('leaveAll');
         });
 	});
 </script>

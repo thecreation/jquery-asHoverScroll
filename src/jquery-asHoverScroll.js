@@ -208,6 +208,8 @@
                 enterEvents = ['enter'],
                 leaveEvents = [];
 
+            this.entered = [];
+
             if (this.options.mouseMove) {
                 this.$element.on(this.eventName('mousemove'), $.proxy(this.onMove, this));
                 enterEvents.push('mouseenter');
@@ -225,9 +227,18 @@
             }
 
             this.$list.on(this.eventName(enterEvents.join(' ')), this.options.item, function() {
+                self.entered.push(this);
+
                 self.options.onEnter.call(this);
             });
             this.$list.on(this.eventName(leaveEvents.join(' ')), this.options.item, function() {
+                for(var i=0; i<self.entered.length; i++) {
+                    if(self.entered[i] == this) {
+                        self.entered.splice(i, 1);
+                        break;
+                    }
+                }
+
                 self.options.onLeave.call(this);
             });
 
@@ -239,7 +250,15 @@
             }, this.options.throttle));
         },
 
+        leaveAll: function() {
+            var self = this;
+            $.each(self.entered, function(){
+                self.options.onLeave.call(this);
+            });
+        },
+
         unbindEvents: function() {
+            this.entered = [];
             this.$element.off(this.eventName());
             this.$list.off(this.eventName());
             $(window).off(this.eventNameWithId());
@@ -258,6 +277,7 @@
             this._scroll.time = new Date().getTime();
             this._scroll.pointer = this.pointer(event);
             this._scroll.start = this.getPosition();
+            this._scroll.moved = false;
 
             var callback = function() {
                 self.enter('scrolling');
@@ -296,6 +316,10 @@
             this._scroll.updated = this.pointer(event);
             var distance = this.distance(this._scroll.pointer, this._scroll.updated);
 
+            if (Math.abs(this._scroll.pointer.x - this._scroll.updated.x) > 10 || Math.abs(this._scroll.pointer.y - this._scroll.updated.y) > 10) {
+                this._scroll.moved = true;
+            }
+
             if (!this.is('scrolling')) {
                 return;
             }
@@ -317,7 +341,19 @@
          * Handles the `touchend` and `mouseup` events.
          */
         onScrollEnd: function(event) {
-            $(document).off(this.eventName('touchmove touchend blur'));
+            if (this.options.touchScroll && support.touch) {
+                $(document).off(this.eventName('touchmove touchend'));
+            }
+
+            if (this.options.pointerScroll && support.pointer) {
+                $(document).off(this.eventName(support.prefixPointerEvent('pointerup')));
+            }
+
+            $(document).off(this.eventName('blur'));
+
+            if (!this._scroll.moved) {
+                $(event.target).trigger('enter');
+            }
 
             if (!this.is('scrolling')) {
                 return;
@@ -326,7 +362,7 @@
             this.leave('scrolling');
             this._trigger('scrolled');
 
-            $(event.target).trigger('enter');
+            // $(event.target).trigger('enter');
         },
 
         /**

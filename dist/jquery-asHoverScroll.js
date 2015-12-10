@@ -1,4 +1,4 @@
-/*! jQuery asHoverScroll - v0.2.0 - 2015-05-29
+/*! jQuery asHoverScroll - v0.2.1 - 2015-12-11
 * https://github.com/amazingSurge/jquery-asHoverScroll
 * Copyright (c) 2015 amazingSurge; Licensed GPL */
 (function($) {
@@ -254,6 +254,7 @@
             this._scroll.time = new Date().getTime();
             this._scroll.pointer = this.pointer(event);
             this._scroll.start = this.getPosition();
+            this._scroll.moved = false;
 
             var callback = function() {
                 self.enter('scrolling');
@@ -292,6 +293,10 @@
             this._scroll.updated = this.pointer(event);
             var distance = this.distance(this._scroll.pointer, this._scroll.updated);
 
+            if (Math.abs(this._scroll.pointer.x - this._scroll.updated.x) > 10 || Math.abs(this._scroll.pointer.y - this._scroll.updated.y) > 10) {
+                this._scroll.moved = true;
+            }
+
             if (!this.is('scrolling')) {
                 return;
             }
@@ -313,7 +318,19 @@
          * Handles the `touchend` and `mouseup` events.
          */
         onScrollEnd: function(event) {
-            $(document).off(this.eventName('touchmove touchend blur'));
+            if (this.options.touchScroll && support.touch) {
+                $(document).off(this.eventName('touchmove touchend'));
+            }
+
+            if (this.options.pointerScroll && support.pointer) {
+                $(document).off(this.eventName(support.prefixPointerEvent('pointerup')));
+            }
+
+            $(document).off(this.eventName('blur'));
+
+            if (!this._scroll.moved) {
+                $(event.target).trigger('enter');
+            }
 
             if (!this.is('scrolling')) {
                 return;
@@ -322,7 +339,7 @@
             this.leave('scrolling');
             this._trigger('scrolled');
 
-            $(event.target).trigger('enter');
+            // $(event.target).trigger('enter');
         },
 
         /**
@@ -337,7 +354,7 @@
 
             event = this.getEvent(event);
 
-            if (event.pageX & this.options.fixed) {
+            if (event.pageX && !this.options.fixed) {
                 result.x = event.pageX;
                 result.y = event.pageY;
             } else {
@@ -374,7 +391,7 @@
 
             if (this.isMatchScroll(event)) {
                 var pointer, distance, offset;
-                if (event[this.attributes.page] & this.options.fixed) {
+                if (event[this.attributes.page] && !this.options.fixed) {
                     pointer = event[this.attributes.page];
                 } else {
                     pointer = event[this.attributes.client];
