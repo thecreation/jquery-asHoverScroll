@@ -208,8 +208,6 @@
                 enterEvents = ['enter'],
                 leaveEvents = [];
 
-            this.entered = [];
-
             if (this.options.mouseMove) {
                 this.$element.on(this.eventName('mousemove'), $.proxy(this.onMove, this));
                 enterEvents.push('mouseenter');
@@ -227,18 +225,9 @@
             }
 
             this.$list.on(this.eventName(enterEvents.join(' ')), this.options.item, function() {
-                self.entered.push(this);
-
                 self.options.onEnter.call(this);
             });
             this.$list.on(this.eventName(leaveEvents.join(' ')), this.options.item, function() {
-                for(var i=0; i<self.entered.length; i++) {
-                    if(self.entered[i] == this) {
-                        self.entered.splice(i, 1);
-                        break;
-                    }
-                }
-
                 self.options.onLeave.call(this);
             });
 
@@ -250,15 +239,7 @@
             }, this.options.throttle));
         },
 
-        leaveAll: function() {
-            var self = this;
-            $.each(self.entered, function(){
-                self.options.onLeave.call(this);
-            });
-        },
-
         unbindEvents: function() {
-            this.entered = [];
             this.$element.off(this.eventName());
             this.$list.off(this.eventName());
             $(window).off(this.eventNameWithId());
@@ -271,6 +252,10 @@
             var self = this;
 
             if (event.which === 3) {
+                return;
+            }
+
+            if ($(event.target).closest(this.options.exception).length > 0) {
                 return;
             }
 
@@ -352,7 +337,7 @@
             $(document).off(this.eventName('blur'));
 
             if (!this._scroll.moved) {
-                $(event.target).trigger('enter');
+                $(event.target).trigger('tap');
             }
 
             if (!this.is('scrolling')) {

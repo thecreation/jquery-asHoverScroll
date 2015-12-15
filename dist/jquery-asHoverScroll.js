@@ -1,4 +1,4 @@
-/*! jQuery asHoverScroll - v0.2.1 - 2015-12-11
+/*! jQuery asHoverScroll - v0.2.2 - 2015-12-16
 * https://github.com/amazingSurge/jquery-asHoverScroll
 * Copyright (c) 2015 amazingSurge; Licensed GPL */
 (function($) {
@@ -251,6 +251,10 @@
                 return;
             }
 
+            if ($(event.target).closest(this.options.exception).length > 0) {
+                return;
+            }
+
             this._scroll.time = new Date().getTime();
             this._scroll.pointer = this.pointer(event);
             this._scroll.start = this.getPosition();
@@ -329,7 +333,7 @@
             $(document).off(this.eventName('blur'));
 
             if (!this._scroll.moved) {
-                $(event.target).trigger('enter');
+                $(event.target).trigger('tap');
             }
 
             if (!this.is('scrolling')) {
