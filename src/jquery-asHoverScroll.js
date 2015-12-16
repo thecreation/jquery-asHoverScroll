@@ -225,10 +225,14 @@
             }
 
             this.$list.on(this.eventName(enterEvents.join(' ')), this.options.item, function() {
-                self.options.onEnter.call(this);
+                if (!self.is('scrolling')) {
+                    self.options.onEnter.call(this);
+                }
             });
             this.$list.on(this.eventName(leaveEvents.join(' ')), this.options.item, function() {
-                self.options.onLeave.call(this);
+                if (!self.is('scrolling')) {
+                    self.options.onLeave.call(this);
+                }
             });
 
             $(window).on(this.eventNameWithId('orientationchange'), function() {
@@ -326,6 +330,7 @@
          * Handles the `touchend` and `mouseup` events.
          */
         onScrollEnd: function(event) {
+            var self = this;
             if (this.options.touchScroll && support.touch) {
                 $(document).off(this.eventName('touchmove touchend'));
             }
@@ -344,10 +349,11 @@
                 return;
             }
 
-            this.leave('scrolling');
-            this._trigger('scrolled');
-
-            // $(event.target).trigger('enter');
+            // touch will trigger mousemove event after 300ms delay. So we need avoid it
+            setTimeout(function() {
+                self.leave('scrolling');
+                self._trigger('scrolled');
+            }, 500);
         },
 
         /**
@@ -396,6 +402,10 @@
 
         onMove: function(event) {
             event = this.getEvent(event);
+
+            if (!this.is('scrolling')) {
+                return;
+            }
 
             if (this.isMatchScroll(event)) {
                 var pointer, distance, offset;
@@ -522,8 +532,6 @@
                 if (!this.canScroll()) {
                     this.initPosition();
                 }
-
-
             }
         },
 
