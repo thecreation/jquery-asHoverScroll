@@ -403,7 +403,7 @@
         onMove: function(event) {
             event = this.getEvent(event);
 
-            if (!this.is('scrolling')) {
+            if (this.is('scrolling')) {
                 return;
             }
 
