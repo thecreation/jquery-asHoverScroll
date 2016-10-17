@@ -106,6 +106,13 @@ let support = {};
     support.pointer = false;
   }
 
+  support.convertMatrixToArray = function(value) {
+    if (value && (value.substr(0, 6) === "matrix")) {
+      return value.replace(/^.*\((.*)\)$/g, "$1").replace(/px/g, '').split(/, +/);
+    }
+    return false;
+  }
+
   support.prefixPointerEvent = (pointerEvent) => {
     let charStart = 9,
       subStart = 10;

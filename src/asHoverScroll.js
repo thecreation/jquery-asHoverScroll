@@ -536,12 +536,12 @@ class asHoverScroll {
     this.trigger('disable');
   }
 
-  destory() {
+  destroy() {
     this.$element.removeClass(this.classes.disabled);
     this.unbindEvents();
     this.$element.data(NAMESPACE, null);
 
-    this.trigger('destory');
+    this.trigger('destroy');
   }
 
   static setDefaults(options) {

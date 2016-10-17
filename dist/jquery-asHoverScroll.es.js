@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.0
+* jQuery asHoverScroll v0.3.1
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -141,6 +141,13 @@ let support = {};
     support.pointer = true;
   } else {
     support.pointer = false;
+  }
+
+  support.convertMatrixToArray = function(value) {
+    if (value && (value.substr(0, 6) === "matrix")) {
+      return value.replace(/^.*\((.*)\)$/g, "$1").replace(/px/g, '').split(/, +/);
+    }
+    return false;
   }
 
   support.prefixPointerEvent = (pointerEvent) => {
@@ -687,12 +694,12 @@ class asHoverScroll {
     this.trigger('disable');
   }
 
-  destory() {
+  destroy() {
     this.$element.removeClass(this.classes.disabled);
     this.unbindEvents();
     this.$element.data(NAMESPACE$1, null);
 
-    this.trigger('destory');
+    this.trigger('destroy');
   }
 
   static setDefaults(options) {
@@ -701,7 +708,7 @@ class asHoverScroll {
 }
 
 var info = {
-  version:'0.3.0'
+  version:'0.3.1'
 };
 
 const NAMESPACE = 'asHoverScroll';
