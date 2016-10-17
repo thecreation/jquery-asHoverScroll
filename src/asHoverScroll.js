@@ -412,7 +412,7 @@ class asHoverScroll {
 
   eventNameWithId(events) {
     if (typeof events !== 'string' || events === '') {
-      return `${this.options.namespace}-${this.instanceId}`;
+      return `.${this.options.namespace}-${this.instanceId}`;
     }
 
     events = events.split(' ');
