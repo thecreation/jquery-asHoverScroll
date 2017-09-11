@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.2
+* jQuery asHoverScroll v0.3.3
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -148,7 +148,7 @@ let support = {};
       return value.replace(/^.*\((.*)\)$/g, "$1").replace(/px/g, '').split(/, +/);
     }
     return false;
-  }
+  };
 
   support.prefixPointerEvent = (pointerEvent) => {
     let charStart = 9,
@@ -708,7 +708,7 @@ class asHoverScroll {
 }
 
 var info = {
-  version:'0.3.2'
+  version:'0.3.3'
 };
 
 const NAMESPACE = 'asHoverScroll';
