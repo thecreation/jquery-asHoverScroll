@@ -83,7 +83,27 @@ class asHoverScroll {
     }
 
     if (this.options.pointerScroll && support.pointer) {
-      this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $.proxy(this.onScrollStart, this));
+      //this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $.proxy(this.onScrollStart, this));
+
+      // fixed by FreMaNgo
+      this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
+        let isUp = false;
+        this.$element.one('pointerup', () => {
+          isUp = true;
+        });
+
+        window.setTimeout(() => {
+          if(isUp){
+            return false;
+          }else{
+            this.$element.off('pointerup');
+            $.proxy(this.onScrollStart, this)(e);
+          }
+        }, 100)
+      }
+    );
+    // fixed by FreMaNgo -- END
+
       this.$element.on(this.eventName(support.prefixPointerEvent('pointercancel')), $.proxy(this.onScrollEnd, this));
     }
 
