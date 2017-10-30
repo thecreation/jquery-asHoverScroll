@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.3
+* jQuery asHoverScroll v0.3.4
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -290,6 +290,9 @@
             // init length data
             this.updateLength();
 
+            if (this.options.pointerScroll && support.pointer) {
+              this.$element.css('touch-action', 'none');
+            }
             this.bindEvents();
           }
         },
@@ -377,9 +380,12 @@
         {
           key: 'onScrollStart',
           value: function onScrollStart(event) {
-            var _this2 = this;
-
             var that = this;
+
+            if (this.is('scrolling')) {
+              return;
+            }
+
             if (event.which === 3) {
               return;
             }
@@ -397,11 +403,6 @@
             this._scroll.start = this.getPosition();
             this._scroll.moved = false;
 
-            var callback = function callback() {
-              _this2.enter('scrolling');
-              _this2.trigger('scroll');
-            };
-
             if (this.options.touchScroll && support.touch) {
               (0, _jquery2.default)(document).on(
                 this.eventName('touchend'),
@@ -411,12 +412,15 @@
               (0, _jquery2.default)(document).one(
                 this.eventName('touchmove'),
                 _jquery2.default.proxy(function() {
-                  (0, _jquery2.default)(document).on(
-                    that.eventName('touchmove'),
-                    _jquery2.default.proxy(this.onScrollMove, this)
-                  );
+                  if (!this.is('scrolling')) {
+                    (0, _jquery2.default)(document).on(
+                      that.eventName('touchmove'),
+                      _jquery2.default.proxy(this.onScrollMove, this)
+                    );
 
-                  callback();
+                    this.enter('scrolling');
+                    this.trigger('scroll');
+                  }
                 }, this)
               );
             }
@@ -430,12 +434,15 @@
               (0, _jquery2.default)(document).one(
                 this.eventName(support.prefixPointerEvent('pointermove')),
                 _jquery2.default.proxy(function() {
-                  (0, _jquery2.default)(document).on(
-                    that.eventName(support.prefixPointerEvent('pointermove')),
-                    _jquery2.default.proxy(this.onScrollMove, this)
-                  );
+                  if (!this.is('scrolling')) {
+                    (0, _jquery2.default)(document).on(
+                      that.eventName(support.prefixPointerEvent('pointermove')),
+                      _jquery2.default.proxy(this.onScrollMove, this)
+                    );
 
-                  callback();
+                    this.enter('scrolling');
+                    this.trigger('scroll');
+                  }
                 }, this)
               );
             }
@@ -484,7 +491,9 @@
         {
           key: 'onScrollEnd',
           value: function onScrollEnd(event) {
-            var _this3 = this;
+            if (!this.is('scrolling')) {
+              return;
+            }
 
             if (this.options.touchScroll && support.touch) {
               (0, _jquery2.default)(document).off(
@@ -494,7 +503,9 @@
 
             if (this.options.pointerScroll && support.pointer) {
               (0, _jquery2.default)(document).off(
-                this.eventName(support.prefixPointerEvent('pointerup'))
+                this.eventName(
+                  support.prefixPointerEvent('pointermove pointerup')
+                )
               );
             }
 
@@ -504,15 +515,8 @@
               (0, _jquery2.default)(event.target).trigger('tap');
             }
 
-            if (!this.is('scrolling')) {
-              return;
-            }
-
-            // touch will trigger mousemove event after 300ms delay. So we need avoid it
-            setTimeout(function() {
-              _this3.leave('scrolling');
-              _this3.trigger('scrolled');
-            }, 500);
+            this.leave('scrolling');
+            this.trigger('scrolled');
           }
         },
         {
@@ -806,19 +810,19 @@
               this._states[state] = 0;
             }
 
-            this._states[state]++;
+            this._states[state] = 1;
           }
         },
         {
           key: 'leave',
           value: function leave(state) {
-            this._states[state]--;
+            this._states[state] = 0;
           }
         },
         {
           key: 'throttle',
           value: function throttle(func, wait) {
-            var _this4 = this;
+            var _this2 = this;
 
             var _now =
               Date.now ||
@@ -852,7 +856,7 @@
               /*eslint consistent-this: "off"*/
               var now = _now();
               var remaining = wait - (now - previous);
-              context = _this4;
+              context = _this2;
               args = params;
               if (remaining <= 0 || remaining > wait) {
                 if (timeout) {
@@ -907,6 +911,10 @@
             this.unbindEvents();
             this.$element.data(NAMESPACE$1, null);
 
+            if (this.options.pointerScroll && support.pointer) {
+              this.$element.css('touch-action', null);
+            }
+
             this.trigger('destroy');
           }
         }
@@ -928,7 +936,7 @@
   })();
 
   var info = {
-    version: '0.3.3'
+    version: '0.3.4'
   };
 
   var NAMESPACE = 'asHoverScroll';
