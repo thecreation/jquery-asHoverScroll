@@ -2,7 +2,7 @@
   "name": "jquery-asHoverScroll",
   "title": "jQuery asHoverScroll",
   "description": "A jquery plugin helps scroll the list that is larger than its container.",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "homepage": "https://github.com/amazingSurge/jquery-asHoverScroll",
   "author": {
     "name": "amazingSurge",

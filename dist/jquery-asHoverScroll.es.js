@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.4
+* jQuery asHoverScroll v0.3.5
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -359,6 +359,10 @@ class asHoverScroll {
    * Handles the `touchend` and `mouseup` events.
    */
   onScrollEnd(event) {
+    if (!this._scroll.moved) {
+      $$1(event.target).trigger('tap');
+    }
+
     if (!this.is('scrolling')) {
       return;
     }
@@ -372,10 +376,6 @@ class asHoverScroll {
     }
 
     $$1(document).off(this.eventName('blur'));
-
-    if (!this._scroll.moved) {
-      $$1(event.target).trigger('tap');
-    }
 
     this.leave('scrolling');
     this.trigger('scrolled');
@@ -718,7 +718,7 @@ class asHoverScroll {
 }
 
 var info = {
-  version:'0.3.4'
+  version:'0.3.5'
 };
 
 const NAMESPACE = 'asHoverScroll';

@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.4
+* jQuery asHoverScroll v0.3.5
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -491,6 +491,10 @@
         {
           key: 'onScrollEnd',
           value: function onScrollEnd(event) {
+            if (!this._scroll.moved) {
+              (0, _jquery2.default)(event.target).trigger('tap');
+            }
+
             if (!this.is('scrolling')) {
               return;
             }
@@ -510,10 +514,6 @@
             }
 
             (0, _jquery2.default)(document).off(this.eventName('blur'));
-
-            if (!this._scroll.moved) {
-              (0, _jquery2.default)(event.target).trigger('tap');
-            }
 
             this.leave('scrolling');
             this.trigger('scrolled');
@@ -936,7 +936,7 @@
   })();
 
   var info = {
-    version: '0.3.4'
+    version: '0.3.5'
   };
 
   var NAMESPACE = 'asHoverScroll';
