@@ -210,8 +210,8 @@
 
       return window.MSPointerEvent
         ? 'MSPointer' +
-          pointerEvent.charAt(charStart).toUpperCase() +
-          pointerEvent.substr(subStart)
+            pointerEvent.charAt(charStart).toUpperCase() +
+            pointerEvent.substr(subStart)
         : pointerEvent;
     };
   })(support);
@@ -290,9 +290,6 @@
             // init length data
             this.updateLength();
 
-            if (this.options.pointerScroll && support.pointer) {
-              this.$element.css('touch-action', 'none');
-            }
             this.bindEvents();
           }
         },
@@ -330,6 +327,25 @@
                 this.eventName(support.prefixPointerEvent('pointerdown')),
                 _jquery2.default.proxy(this.onScrollStart, this)
               );
+
+              // fixed by FreMaNgo
+              // this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
+              //   let isUp = false;
+              //   this.$element.one('pointerup', () => {
+              //     isUp = true;
+              //   });
+
+              //   window.setTimeout(() => {
+              //     if(isUp){
+              //       return false;
+              //     }else{
+              //       this.$element.off('pointerup');
+              //       $.proxy(this.onScrollStart, this)(e);
+              //     }
+              //   }, 100)
+              // });
+              // fixed by FreMaNgo -- END
+
               this.$element.on(
                 this.eventName(support.prefixPointerEvent('pointercancel')),
                 _jquery2.default.proxy(this.onScrollEnd, this)
@@ -380,8 +396,9 @@
         {
           key: 'onScrollStart',
           value: function onScrollStart(event) {
-            var that = this;
+            var _this2 = this;
 
+            var that = this;
             if (this.is('scrolling')) {
               return;
             }
@@ -403,6 +420,11 @@
             this._scroll.start = this.getPosition();
             this._scroll.moved = false;
 
+            var callback = function callback() {
+              _this2.enter('scrolling');
+              _this2.trigger('scroll');
+            };
+
             if (this.options.touchScroll && support.touch) {
               (0, _jquery2.default)(document).on(
                 this.eventName('touchend'),
@@ -417,9 +439,7 @@
                       that.eventName('touchmove'),
                       _jquery2.default.proxy(this.onScrollMove, this)
                     );
-
-                    this.enter('scrolling');
-                    this.trigger('scroll');
+                    callback();
                   }
                 }, this)
               );
@@ -440,8 +460,7 @@
                       _jquery2.default.proxy(this.onScrollMove, this)
                     );
 
-                    this.enter('scrolling');
-                    this.trigger('scroll');
+                    callback();
                   }
                 }, this)
               );
@@ -495,9 +514,9 @@
               (0, _jquery2.default)(event.target).trigger('tap');
             }
 
-            if (!this.is('scrolling')) {
-              return;
-            }
+            // if (!this.is('scrolling')) {
+            //   return;
+            // }
 
             if (this.options.touchScroll && support.touch) {
               (0, _jquery2.default)(document).off(
@@ -515,8 +534,11 @@
 
             (0, _jquery2.default)(document).off(this.eventName('blur'));
 
+            // touch will trigger mousemove event after 300ms delay. So we need avoid it
+            // setTimeout(() => {
             this.leave('scrolling');
             this.trigger('scrolled');
+            // }, 500);
           }
         },
         {
@@ -822,7 +844,7 @@
         {
           key: 'throttle',
           value: function throttle(func, wait) {
-            var _this2 = this;
+            var _this3 = this;
 
             var _now =
               Date.now ||
@@ -856,7 +878,7 @@
               /*eslint consistent-this: "off"*/
               var now = _now();
               var remaining = wait - (now - previous);
-              context = _this2;
+              context = _this3;
               args = params;
               if (remaining <= 0 || remaining > wait) {
                 if (timeout) {
@@ -910,10 +932,6 @@
             this.$element.removeClass(this.classes.disabled);
             this.unbindEvents();
             this.$element.data(NAMESPACE$1, null);
-
-            if (this.options.pointerScroll && support.pointer) {
-              this.$element.css('touch-action', null);
-            }
 
             this.trigger('destroy');
           }

@@ -83,25 +83,24 @@ class asHoverScroll {
     }
 
     if (this.options.pointerScroll && support.pointer) {
-      //this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $.proxy(this.onScrollStart, this));
+      this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $.proxy(this.onScrollStart, this));
 
       // fixed by FreMaNgo
-      this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
-        let isUp = false;
-        this.$element.one('pointerup', () => {
-          isUp = true;
-        });
+      // this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
+      //   let isUp = false;
+      //   this.$element.one('pointerup', () => {
+      //     isUp = true;
+      //   });
 
-        window.setTimeout(() => {
-          if(isUp){
-            return false;
-          }else{
-            this.$element.off('pointerup');
-            $.proxy(this.onScrollStart, this)(e);
-          }
-        }, 100)
-      }
-    );
+      //   window.setTimeout(() => {
+      //     if(isUp){
+      //       return false;
+      //     }else{
+      //       this.$element.off('pointerup');
+      //       $.proxy(this.onScrollStart, this)(e);
+      //     }
+      //   }, 100)
+      // });
     // fixed by FreMaNgo -- END
 
       this.$element.on(this.eventName(support.prefixPointerEvent('pointercancel')), $.proxy(this.onScrollEnd, this));
@@ -137,6 +136,10 @@ class asHoverScroll {
    */
   onScrollStart(event) {
     const that = this;
+    if (this.is('scrolling')) {
+      return;
+    }
+
     if (event.which === 3) {
       return;
     }
@@ -159,9 +162,10 @@ class asHoverScroll {
       $(document).on(this.eventName('touchend'), $.proxy(this.onScrollEnd, this));
 
       $(document).one(this.eventName('touchmove'), $.proxy(function() {
-        $(document).on(that.eventName('touchmove'), $.proxy(this.onScrollMove, this));
-
-        callback();
+        if(!this.is('scrolling')){
+          $(document).on(that.eventName('touchmove'), $.proxy(this.onScrollMove, this));
+          callback();
+        }
       }, this));
     }
 
@@ -169,9 +173,11 @@ class asHoverScroll {
       $(document).on(this.eventName(support.prefixPointerEvent('pointerup')), $.proxy(this.onScrollEnd, this));
 
       $(document).one(this.eventName(support.prefixPointerEvent('pointermove')), $.proxy(function() {
-        $(document).on(that.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onScrollMove, this));
+        if(!this.is('scrolling')){
+          $(document).on(that.eventName(support.prefixPointerEvent('pointermove')), $.proxy(this.onScrollMove, this));
 
-        callback();
+          callback();
+        }
       }, this));
     }
 
@@ -212,29 +218,29 @@ class asHoverScroll {
    * Handles the `touchend` and `mouseup` events.
    */
   onScrollEnd(event) {
+    if (!this._scroll.moved) {
+      $(event.target).trigger('tap');
+    }
+
+    // if (!this.is('scrolling')) {
+    //   return;
+    // }
+
     if (this.options.touchScroll && support.touch) {
       $(document).off(this.eventName('touchmove touchend'));
     }
 
     if (this.options.pointerScroll && support.pointer) {
-      $(document).off(this.eventName(support.prefixPointerEvent('pointerup')));
+      $(document).off(this.eventName(support.prefixPointerEvent('pointermove pointerup')));
     }
 
     $(document).off(this.eventName('blur'));
 
-    if (!this._scroll.moved) {
-      $(event.target).trigger('tap');
-    }
-
-    if (!this.is('scrolling')) {
-      return;
-    }
-
     // touch will trigger mousemove event after 300ms delay. So we need avoid it
-    setTimeout(() => {
+    // setTimeout(() => {
       this.leave('scrolling');
       this.trigger('scrolled');
-    }, 500);
+    // }, 500);
   }
 
   /**
@@ -475,14 +481,14 @@ class asHoverScroll {
       this._states[state] = 0;
     }
 
-    this._states[state] ++;
+    this._states[state] = 1;
   }
 
   /**
    * Leaves a state.
    */
   leave(state) {
-    this._states[state] --;
+    this._states[state] = 0;
   }
 
   /**

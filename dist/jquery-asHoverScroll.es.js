@@ -221,9 +221,6 @@ class asHoverScroll {
     // init length data
     this.updateLength();
 
-    if (this.options.pointerScroll && support.pointer) {
-      this.$element.css('touch-action', 'none');
-    }
     this.bindEvents();
   }
 
@@ -245,6 +242,25 @@ class asHoverScroll {
 
     if (this.options.pointerScroll && support.pointer) {
       this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $$1.proxy(this.onScrollStart, this));
+
+      // fixed by FreMaNgo
+      // this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
+      //   let isUp = false;
+      //   this.$element.one('pointerup', () => {
+      //     isUp = true;
+      //   });
+
+      //   window.setTimeout(() => {
+      //     if(isUp){
+      //       return false;
+      //     }else{
+      //       this.$element.off('pointerup');
+      //       $.proxy(this.onScrollStart, this)(e);
+      //     }
+      //   }, 100)
+      // });
+    // fixed by FreMaNgo -- END
+
       this.$element.on(this.eventName(support.prefixPointerEvent('pointercancel')), $$1.proxy(this.onScrollEnd, this));
     }
 
@@ -278,7 +294,6 @@ class asHoverScroll {
    */
   onScrollStart(event) {
     const that = this;
-
     if (this.is('scrolling')) {
       return;
     }
@@ -296,15 +311,18 @@ class asHoverScroll {
     this._scroll.start = this.getPosition();
     this._scroll.moved = false;
 
+    const callback = () => {
+      this.enter('scrolling');
+      this.trigger('scroll');
+    };
+
     if (this.options.touchScroll && support.touch) {
       $$1(document).on(this.eventName('touchend'), $$1.proxy(this.onScrollEnd, this));
 
       $$1(document).one(this.eventName('touchmove'), $$1.proxy(function() {
-        if (!this.is('scrolling')) {
+        if(!this.is('scrolling')){
           $$1(document).on(that.eventName('touchmove'), $$1.proxy(this.onScrollMove, this));
-
-          this.enter('scrolling');
-          this.trigger('scroll');
+          callback();
         }
       }, this));
     }
@@ -313,11 +331,10 @@ class asHoverScroll {
       $$1(document).on(this.eventName(support.prefixPointerEvent('pointerup')), $$1.proxy(this.onScrollEnd, this));
 
       $$1(document).one(this.eventName(support.prefixPointerEvent('pointermove')), $$1.proxy(function() {
-        if (!this.is('scrolling')) {
+        if(!this.is('scrolling')){
           $$1(document).on(that.eventName(support.prefixPointerEvent('pointermove')), $$1.proxy(this.onScrollMove, this));
 
-          this.enter('scrolling');
-          this.trigger('scroll');
+          callback();
         }
       }, this));
     }
@@ -363,9 +380,9 @@ class asHoverScroll {
       $$1(event.target).trigger('tap');
     }
 
-    if (!this.is('scrolling')) {
-      return;
-    }
+    // if (!this.is('scrolling')) {
+    //   return;
+    // }
 
     if (this.options.touchScroll && support.touch) {
       $$1(document).off(this.eventName('touchmove touchend'));
@@ -377,8 +394,11 @@ class asHoverScroll {
 
     $$1(document).off(this.eventName('blur'));
 
-    this.leave('scrolling');
-    this.trigger('scrolled');
+    // touch will trigger mousemove event after 300ms delay. So we need avoid it
+    // setTimeout(() => {
+      this.leave('scrolling');
+      this.trigger('scrolled');
+    // }, 500);
   }
 
   /**
@@ -704,10 +724,6 @@ class asHoverScroll {
     this.$element.removeClass(this.classes.disabled);
     this.unbindEvents();
     this.$element.data(NAMESPACE$1, null);
-
-    if (this.options.pointerScroll && support.pointer) {
-      this.$element.css('touch-action', null);
-    }
 
     this.trigger('destroy');
   }
