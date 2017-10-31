@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.5
+* jQuery asHoverScroll v0.3.6
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -210,8 +210,8 @@
 
       return window.MSPointerEvent
         ? 'MSPointer' +
-            pointerEvent.charAt(charStart).toUpperCase() +
-            pointerEvent.substr(subStart)
+          pointerEvent.charAt(charStart).toUpperCase() +
+          pointerEvent.substr(subStart)
         : pointerEvent;
     };
   })(support);
@@ -327,25 +327,6 @@
                 this.eventName(support.prefixPointerEvent('pointerdown')),
                 _jquery2.default.proxy(this.onScrollStart, this)
               );
-
-              // fixed by FreMaNgo
-              // this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
-              //   let isUp = false;
-              //   this.$element.one('pointerup', () => {
-              //     isUp = true;
-              //   });
-
-              //   window.setTimeout(() => {
-              //     if(isUp){
-              //       return false;
-              //     }else{
-              //       this.$element.off('pointerup');
-              //       $.proxy(this.onScrollStart, this)(e);
-              //     }
-              //   }, 100)
-              // });
-              // fixed by FreMaNgo -- END
-
               this.$element.on(
                 this.eventName(support.prefixPointerEvent('pointercancel')),
                 _jquery2.default.proxy(this.onScrollEnd, this)
@@ -399,6 +380,7 @@
             var _this2 = this;
 
             var that = this;
+
             if (this.is('scrolling')) {
               return;
             }
@@ -534,11 +516,8 @@
 
             (0, _jquery2.default)(document).off(this.eventName('blur'));
 
-            // touch will trigger mousemove event after 300ms delay. So we need avoid it
-            // setTimeout(() => {
             this.leave('scrolling');
             this.trigger('scrolled');
-            // }, 500);
           }
         },
         {
@@ -954,7 +933,7 @@
   })();
 
   var info = {
-    version: '0.3.5'
+    version: '0.3.6'
   };
 
   var NAMESPACE = 'asHoverScroll';
