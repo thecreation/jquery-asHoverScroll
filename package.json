@@ -32,6 +32,8 @@
     "dist",
     "src"
   ],
+  "main": "dist/jquery-asHoverScroll.js",
+  "module": "dist/jquery-asHoverScroll.es.js",
   "scripts": {
     "prestart": "npm install",
     "start": "gulp serve",
