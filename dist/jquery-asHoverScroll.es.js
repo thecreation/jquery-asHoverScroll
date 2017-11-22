@@ -1,5 +1,5 @@
 /**
-* jQuery asHoverScroll v0.3.6
+* jQuery asHoverScroll v0.3.7
 * https://github.com/amazingSurge/jquery-asHoverScroll
 *
 * Copyright (c) amazingSurge
@@ -242,6 +242,25 @@ class asHoverScroll {
 
     if (this.options.pointerScroll && support.pointer) {
       this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')), $$1.proxy(this.onScrollStart, this));
+
+      // fixed by FreMaNgo
+      // this.$element.on(this.eventName(support.prefixPointerEvent('pointerdown')),(e) => {
+      //   let isUp = false;
+      //   this.$element.one('pointerup', () => {
+      //     isUp = true;
+      //   });
+
+      //   window.setTimeout(() => {
+      //     if(isUp){
+      //       return false;
+      //     }else{
+      //       this.$element.off('pointerup');
+      //       $.proxy(this.onScrollStart, this)(e);
+      //     }
+      //   }, 100)
+      // });
+    // fixed by FreMaNgo -- END
+
       this.$element.on(this.eventName(support.prefixPointerEvent('pointercancel')), $$1.proxy(this.onScrollEnd, this));
     }
 
@@ -275,7 +294,6 @@ class asHoverScroll {
    */
   onScrollStart(event) {
     const that = this;
-
     if (this.is('scrolling')) {
       return;
     }
@@ -302,7 +320,7 @@ class asHoverScroll {
       $$1(document).on(this.eventName('touchend'), $$1.proxy(this.onScrollEnd, this));
 
       $$1(document).one(this.eventName('touchmove'), $$1.proxy(function() {
-        if (!this.is('scrolling')) {
+        if(!this.is('scrolling')){
           $$1(document).on(that.eventName('touchmove'), $$1.proxy(this.onScrollMove, this));
           callback();
         }
@@ -313,7 +331,7 @@ class asHoverScroll {
       $$1(document).on(this.eventName(support.prefixPointerEvent('pointerup')), $$1.proxy(this.onScrollEnd, this));
 
       $$1(document).one(this.eventName(support.prefixPointerEvent('pointermove')), $$1.proxy(function() {
-        if (!this.is('scrolling')) {
+        if(!this.is('scrolling')){
           $$1(document).on(that.eventName(support.prefixPointerEvent('pointermove')), $$1.proxy(this.onScrollMove, this));
 
           callback();
@@ -376,8 +394,11 @@ class asHoverScroll {
 
     $$1(document).off(this.eventName('blur'));
 
-    this.leave('scrolling');
-    this.trigger('scrolled');
+    // touch will trigger mousemove event after 300ms delay. So we need avoid it
+    // setTimeout(() => {
+      this.leave('scrolling');
+      this.trigger('scrolled');
+    // }, 500);
   }
 
   /**
@@ -713,7 +734,7 @@ class asHoverScroll {
 }
 
 var info = {
-  version:'0.3.6'
+  version:'0.3.7'
 };
 
 const NAMESPACE = 'asHoverScroll';
